@@ -1,11 +1,15 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import { SubmitHandler, useForm } from "react-hook-form";
+import {z} from "zod";
 
-type FormFields = {
-  email: string;
-  password: string;
-};
+const schema = z.object({
+  email:z.string().email(),
+  password: z.string().min(8)
+})
+
+type FormFields = z.infer<typeof schema>;
 
 export default function Home() {
   const {
@@ -13,15 +17,10 @@ export default function Home() {
     handleSubmit,
     setError,
     formState: { errors, isSubmitting },
-  } = useForm<FormFields>({
-    defaultValues: {
-      email: "test@gmail.com",
-    },
-  });
+  } = useForm<FormFields>({resolver: zodResolver(schema)});
   const onSubmit: SubmitHandler<FormFields> = async (data) => {
     try{
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      throw new Error();
       console.log(data);
     }
     catch(error){
@@ -35,15 +34,7 @@ export default function Home() {
     <form className="p-4 space-y-4" onSubmit={handleSubmit(onSubmit)}>
       <input
         type="text"
-        {...register("email", {
-          required: "Email is required",
-          validate: (value) => {
-            if (!value.includes("@")) {
-              return "Email must include @";
-            }
-            return true;
-          },
-        })}
+        {...register("email")}
         placeholder="Email"
         className="block  border p-2 w-1/2"
       />
@@ -51,13 +42,7 @@ export default function Home() {
 
       <input
         type="password"
-        {...register("password", {
-          required: "Password is required",
-          minLength: {
-            value: 6,
-            message: "Password must have atleast 6 characters",
-          },
-        })}
+        {...register("password")}
         placeholder="Password"
         className="block p-2 border w-1/2"
       />
